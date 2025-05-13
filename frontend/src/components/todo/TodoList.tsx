@@ -41,8 +41,8 @@ const TodoList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container padding-responsive">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg text-gray-700">Loading...</div>
       </div>
     );
   }

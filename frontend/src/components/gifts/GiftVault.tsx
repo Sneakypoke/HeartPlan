@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import GiftForm from './GiftForm';
 import '../../styles/responsive.css';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface Gift {
   id: number;
@@ -27,6 +29,7 @@ const GiftVault: React.FC = () => {
     purchased: 'all'
   });
   const { isAuthenticated } = useAuth();
+  const { loading } = useSelector((state: RootState) => (state.gifts as any));
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -104,6 +107,14 @@ const GiftVault: React.FC = () => {
   const categories = Array.from(new Set(gifts.map(gift => gift.category)));
   const occasions = Array.from(new Set(gifts.map(gift => gift.occasion)));
   const priceRanges = Array.from(new Set(gifts.map(gift => gift.price_range)));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg text-gray-700">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container padding-responsive">
