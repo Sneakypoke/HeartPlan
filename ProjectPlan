@@ -19,7 +19,7 @@
      - [x] Journal Entries
      - [x] Trip Planning
    - [x] Implement authentication system
-   - [ ] Create API endpoints
+   - [x] Create API endpoints
    - [ ] Set up admin interface
 
 ### Phase 2: Frontend Development (React)
