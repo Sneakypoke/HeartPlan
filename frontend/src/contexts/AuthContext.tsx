@@ -3,48 +3,42 @@ import axios from 'axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
-  login: (username: string, password: string) => Promise<void>;
+  token: string | null;
+  login: (token: string) => void;
   logout: () => void;
   register: (username: string, email: string, password: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  token: null,
+  login: () => {},
+  logout: () => {},
+  register: async () => {},
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
+    const storedToken = localStorage.getItem('access_token');
+    if (storedToken) {
+      setToken(storedToken);
       setIsAuthenticated(true);
-      // TODO: Fetch user data using the token
     }
   }, []);
 
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await axios.post('http://localhost:8000/api/token/', {
-        username,
-        password,
-      });
-      const { access, refresh } = response.data;
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
-      setIsAuthenticated(true);
-      // TODO: Fetch and set user data
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
+  const login = (newToken: string) => {
+    localStorage.setItem('access_token', newToken);
+    setToken(newToken);
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    setToken(null);
     setIsAuthenticated(false);
-    setUser(null);
   };
 
   const register = async (username: string, email: string, password: string) => {
@@ -54,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
       });
-      await login(username, password);
+      await login(username);
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
@@ -62,16 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, register }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}; 
+export const useAuth = () => useContext(AuthContext);
+
+export default AuthContext; 

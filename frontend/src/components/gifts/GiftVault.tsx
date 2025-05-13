@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import GiftForm from './GiftForm';
+import '../../styles/responsive.css';
 
 interface Gift {
   id: number;
   title: string;
   description: string;
   price_range: string;
-  occasion: string;
   category: string;
-  image_url: string;
+  occasion: string;
+  link?: string;
+  image_url?: string;
   purchased: boolean;
-  notes: string;
-  link: string;
 }
 
 const GiftVault: React.FC = () => {
@@ -106,17 +106,17 @@ const GiftVault: React.FC = () => {
   const priceRanges = Array.from(new Set(gifts.map(gift => gift.price_range)));
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gift Idea Vault</h1>
+    <div className="container padding-responsive">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h1 className="text-responsive font-bold mb-4 md:mb-0">Gift Vault</h1>
         <button
           onClick={() => {
             setSelectedGift(null);
             setIsFormOpen(true);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
-          Add New Gift Idea
+          Add Gift Idea
         </button>
       </div>
 
@@ -190,11 +190,11 @@ const GiftVault: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid-responsive">
         {filteredGifts.map((gift) => (
           <div
             key={gift.id}
-            className={`bg-white rounded-lg shadow-lg overflow-hidden ${
+            className={`card-responsive bg-white rounded-lg shadow-lg overflow-hidden ${
               gift.purchased ? 'opacity-75' : ''
             }`}
           >
@@ -202,7 +202,7 @@ const GiftVault: React.FC = () => {
               <img
                 src={gift.image_url || 'https://via.placeholder.com/300x200'}
                 alt={gift.title}
-                className="w-full h-48 object-cover"
+                className="img-responsive w-full h-48 object-cover"
               />
               <button
                 onClick={() => handleTogglePurchased(gift)}
@@ -216,7 +216,7 @@ const GiftVault: React.FC = () => {
               </button>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold mb-2">{gift.title}</h3>
+              <h3 className="text-responsive font-semibold mb-2">{gift.title}</h3>
               <p className="text-gray-600 text-sm mb-2">{gift.description}</p>
               <div className="flex flex-wrap gap-2 mb-3">
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">

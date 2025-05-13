@@ -1,0 +1,256 @@
+/* Breakpoints */
+:root {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* Responsive Container */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* Responsive Typography */
+.text-responsive {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: 1.25rem;
+  }
+}
+
+/* Responsive Spacing */
+.space-responsive {
+  margin: 1rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .space-responsive {
+    margin: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .space-responsive {
+    margin: 2rem;
+    padding: 2rem;
+  }
+}
+
+/* Responsive Grid */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive Navigation */
+.nav-responsive {
+  flex-direction: column;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .nav-responsive {
+    flex-direction: row;
+    padding: 1.5rem;
+  }
+}
+
+/* Responsive Forms */
+.form-responsive {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .form-responsive {
+    max-width: 540px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .form-responsive {
+    max-width: 720px;
+  }
+}
+
+/* Responsive Images */
+.img-responsive {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Responsive Tables */
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Cards */
+.card-responsive {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    width: calc(50% - 1rem);
+    margin-right: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    width: calc(33.333% - 1rem);
+  }
+}
+
+/* Responsive Modals */
+.modal-responsive {
+  width: 90%;
+  max-width: 500px;
+  margin: 1rem auto;
+}
+
+@media (min-width: 768px) {
+  .modal-responsive {
+    width: 80%;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+}
+
+/* Responsive Sidebar */
+.sidebar-responsive {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: -100%;
+  height: 100vh;
+  transition: left 0.3s ease-in-out;
+}
+
+@media (min-width: 768px) {
+  .sidebar-responsive {
+    width: 250px;
+    position: static;
+    height: auto;
+  }
+}
+
+/* Responsive Utilities */
+.hide-on-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-on-mobile {
+    display: block;
+  }
+  
+  .show-on-mobile {
+    display: none;
+  }
+}
+
+/* Responsive Text Alignment */
+.text-center-mobile {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .text-center-mobile {
+    text-align: left;
+  }
+}
+
+/* Responsive Margins */
+.margin-responsive {
+  margin: 1rem;
+}
+
+@media (min-width: 768px) {
+  .margin-responsive {
+    margin: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .margin-responsive {
+    margin: 2rem;
+  }
+}
+
+/* Responsive Padding */
+.padding-responsive {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .padding-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .padding-responsive {
+    padding: 2rem;
+  }
+} 

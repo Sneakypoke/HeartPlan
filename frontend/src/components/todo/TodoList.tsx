@@ -1,139 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch, Todo } from '../../store';
+import {
+  fetchTodos,
+  addTodo,
+  updateTodo,
+  deleteTodo,
+  clearError,
+} from '../../store/slices/todoSlice';
 import TodoForm from './TodoForm';
-
-interface Todo {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-  due_date: string;
-  priority: 'low' | 'medium' | 'high';
-  category: string;
-}
+import '../../styles/responsive.css';
 
 const TodoList: React.FC = () => {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const [editingTodo, setEditingTodo] = useState<number | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { todos, loading, error } = useSelector((state: RootState) => (state.todos as import('../../store/slices/todoSlice').TodoState));
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTodos();
-    }
-  }, [isAuthenticated]);
+    dispatch(fetchTodos());
+  }, [dispatch]);
 
-  const fetchTodos = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/todo-lists/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      setTodos(response.data);
-    } catch (error) {
-      console.error('Error fetching todos:', error);
-    }
-  };
-
-  const handleEdit = (todo: Todo) => {
-    setSelectedTodo(todo);
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (todoId: number) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await axios.delete(`http://localhost:8000/api/todo-lists/${todoId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        setTodos(todos.filter(todo => todo.id !== todoId));
-      } catch (error) {
-        console.error('Error deleting todo:', error);
-      }
-    }
-  };
-
-  const handleToggleComplete = async (todo: Todo) => {
-    try {
-      const response = await axios.patch(
-        `http://localhost:8000/api/todo-lists/${todo.id}/`,
-        { completed: !todo.completed },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      setTodos(todos.map(t => t.id === todo.id ? response.data : t));
-    } catch (error) {
-      console.error('Error updating todo:', error);
-    }
-  };
-
-  const handleSave = () => {
-    fetchTodos();
+  const handleAddTodo = async (todo: Omit<Todo, 'id'>) => {
+    await dispatch(addTodo(todo));
     setIsFormOpen(false);
-    setSelectedTodo(null);
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'text-red-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'low':
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
+  const handleUpdateTodo = async (id: number, todo: Partial<Todo>) => {
+    await dispatch(updateTodo({ id, todo }));
+    setEditingTodo(null);
   };
+
+  const handleDeleteTodo = async (id: number) => {
+    await dispatch(deleteTodo(id));
+  };
+
+  const handleToggleComplete = async (id: number, completed: boolean) => {
+    await dispatch(updateTodo({ id, todo: { completed } }));
+  };
+
+  if (loading) {
+    return (
+      <div className="container padding-responsive">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">To-Do List</h1>
+    <div className="container padding-responsive">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 className="text-responsive font-bold mb-4 md:mb-0">Todo List</h1>
         <button
-          onClick={() => {
-            setSelectedTodo(null);
-            setIsFormOpen(true);
-          }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          onClick={() => setIsFormOpen(true)}
+          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           Add New Task
         </button>
       </div>
 
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 rounded-md">
+          <p className="text-red-700">{error}</p>
+          <button
+            onClick={() => dispatch(clearError())}
+            className="mt-2 text-sm text-red-600 hover:text-red-800"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {isFormOpen && (
         <div className="mb-6">
           <TodoForm
-            todo={selectedTodo || undefined}
-            onSave={handleSave}
-            onCancel={() => {
-              setIsFormOpen(false);
-              setSelectedTodo(null);
-            }}
+            onSubmit={handleAddTodo}
+            onCancel={() => setIsFormOpen(false)}
           />
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="table-responsive">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
+                Task
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Due Date
@@ -142,58 +94,59 @@ const TodoList: React.FC = () => {
                 Priority
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
+                Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {todos.map((todo) => (
-              <tr key={todo.id} className={todo.completed ? 'bg-gray-50' : ''}>
+              <tr key={todo.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() => handleToggleComplete(todo)}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
+                  <div className="text-sm font-medium text-gray-900">{todo.title}</div>
+                  <div className="text-sm text-gray-500">{todo.description}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className={`text-sm font-medium ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                    {todo.title}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-500'}`}>
-                    {todo.description}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-500'}`}>
+                  <div className="text-sm text-gray-900">
                     {new Date(todo.due_date).toLocaleDateString()}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(todo.priority)}`}>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      todo.priority === 'high'
+                        ? 'bg-red-100 text-red-800'
+                        : todo.priority === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800'
+                    }`}
+                  >
                     {todo.priority}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-500'}`}>
-                    {todo.category}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => handleEdit(todo)}
+                    onClick={() => handleToggleComplete(todo.id!, !todo.completed)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      todo.completed
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {todo.completed ? 'Completed' : 'Pending'}
+                  </button>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button
+                    onClick={() => setEditingTodo(todo.id!)}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(todo.id)}
+                    onClick={() => handleDeleteTodo(todo.id!)}
                     className="text-red-600 hover:text-red-900"
                   >
                     Delete
@@ -204,6 +157,18 @@ const TodoList: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {editingTodo && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+            <TodoForm
+              todoId={editingTodo}
+              onSubmit={(todo) => handleUpdateTodo(editingTodo, todo)}
+              onCancel={() => setEditingTodo(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,26 +1,33 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, clearError } from '../../store/slices/authSlice';
+import { RootState, AppDispatch } from '../../store';
+import '../../styles/responsive.css';
 
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error, isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/todos');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await login(username, password);
-    } catch (err) {
-      setError('Invalid username or password');
-    }
+    dispatch(login({ username, password }));
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="form-responsive space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="text-responsive text-center font-extrabold text-gray-900">
             Sign in to your account
           </h2>
         </div>
@@ -66,10 +73,20 @@ const LoginForm: React.FC = () => {
           <div>
             <button
               type="submit"
+              disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
+          </div>
+
+          <div className="text-sm text-center">
+            <a
+              href="/register"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Don't have an account? Sign up
+            </a>
           </div>
         </form>
       </div>

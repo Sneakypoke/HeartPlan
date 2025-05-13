@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import JournalForm from './JournalForm';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import '../../styles/responsive.css';
 
 interface JournalEntry {
   id: number;
@@ -99,15 +98,15 @@ const Journal: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Journal</h1>
+    <div className="container padding-responsive">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 className="text-responsive font-bold mb-4 md:mb-0">Journal</h1>
         <button
           onClick={() => {
             setSelectedEntry(null);
             setIsFormOpen(true);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="w-full md:w-auto px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
         >
           New Entry
         </button>
@@ -198,11 +197,7 @@ const Journal: React.FC = () => {
                 </div>
               </div>
               <div className="prose max-w-none mb-4">
-                <ReactQuill
-                  value={entry.content}
-                  readOnly={true}
-                  theme="bubble"
-                />
+                {entry.content}
               </div>
               {entry.images && entry.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
