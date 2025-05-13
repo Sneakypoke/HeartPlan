@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "axios": "^1.9.0"
+  }
+}
