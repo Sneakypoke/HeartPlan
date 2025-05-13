@@ -53,7 +53,7 @@ const TodoList: React.FC = () => {
         <h1 className="text-responsive font-bold mb-4 md:mb-0">Todo List</h1>
         <button
           onClick={() => setIsFormOpen(true)}
-          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
         >
           Add New Task
         </button>
@@ -64,7 +64,7 @@ const TodoList: React.FC = () => {
           <p className="text-red-700">{error}</p>
           <button
             onClick={() => dispatch(clearError())}
-            className="mt-2 text-sm text-red-600 hover:text-red-800"
+            className="mt-2 text-sm text-red-600 hover:text-red-800 transition-colors duration-200"
           >
             Dismiss
           </button>
@@ -141,13 +141,13 @@ const TodoList: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     onClick={() => setEditingTodo(todo.id!)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                    className="text-indigo-600 hover:text-indigo-900 mr-4 transition-colors duration-200"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteTodo(todo.id!)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-red-600 hover:text-red-900 transition-colors duration-200"
                   >
                     Delete
                   </button>
@@ -159,8 +159,8 @@ const TodoList: React.FC = () => {
       </div>
 
       {editingTodo && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 transition-opacity duration-300">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full shadow-lg transform transition-all duration-300 scale-100">
             <TodoForm
               todoId={editingTodo}
               onSubmit={(todo) => handleUpdateTodo(editingTodo, todo)}
