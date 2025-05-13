@@ -14,10 +14,10 @@
    - [x] Set up Django REST Framework
    - [x] Create core data models:
      - [x] Events
-     - [ ] ToDo Lists
-     - [ ] Gift Ideas
-     - [ ] Journal Entries
-     - [ ] Trip Planning
+     - [x] ToDo Lists
+     - [x] Gift Ideas
+     - [x] Journal Entries
+     - [x] Trip Planning
    - [ ] Implement authentication system
    - [ ] Create API endpoints
    - [ ] Set up admin interface
