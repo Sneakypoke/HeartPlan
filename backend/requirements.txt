@@ -2,9 +2,9 @@ Django==5.2.1
 djangorestframework==3.16.0
 django-cors-headers==4.7.0
 python-dotenv==1.1.0
-psycopg2-binary==2.9.9
+#psycopg2-binary==2.9.9  # prod only — PostgreSQL driver; not needed for SQLite dev
 #Pillow==10.1.0
 django-filter==23.5
 djangorestframework-simplejwt==5.3.1
-gunicorn==21.2.0
-whitenoise==6.6.0 
+#gunicorn==21.2.0         # prod only — WSGI server; runserver handles local dev
+#whitenoise==6.6.0        # prod only — static files; not in MIDDLEWARE
