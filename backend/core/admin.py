@@ -1,11 +1,6 @@
 from django.contrib import admin
-from .models import User, Event, ToDoList, GiftIdea, JournalEntry, TripPlanning
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'created_at')
-    search_fields = ('username', 'email')
-    list_filter = ('created_at',)
+from .models import Event, ToDoList, GiftIdea, JournalEntry, TripPlanning
+# User removed from import — django.contrib.admin handles auth.User automatically
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
