@@ -40,6 +40,14 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Single guard asserting we are not accidentally running a non-debug deployment
+# with dev-only defaults. SECRET_KEY is already enforced above; here we refuse
+# to boot with DEBUG=False while ALLOWED_HOSTS is still the localhost default.
+if not DEBUG and ALLOWED_HOSTS == ['localhost', '127.0.0.1']:
+    raise ImproperlyConfigured(
+        'ALLOWED_HOSTS must be set explicitly when DEBUG=False'
+    )
+
 
 # Application definition
 
