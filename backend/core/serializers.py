@@ -26,23 +26,28 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
+        read_only_fields = ('user',)
 
 class ToDoListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ToDoList
         fields = '__all__'
+        read_only_fields = ('user',)
 
 class GiftIdeaSerializer(serializers.ModelSerializer):
     class Meta:
         model = GiftIdea
         fields = '__all__'
+        read_only_fields = ('user',)
 
 class JournalEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = JournalEntry
         fields = '__all__'
+        read_only_fields = ('user',)
 
 class TripPlanningSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripPlanning
         fields = '__all__'
+        read_only_fields = ('user',)
