@@ -150,5 +150,13 @@ SIMPLE_JWT = {
 }
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
-CORS_ALLOW_CREDENTIALS = True
+# Gate the permissive dev policy on DEBUG; outside dev require an explicit
+# allowlist. Auth uses a Bearer header (not cookies), so credentials are not
+# needed for the cross-origin allowlist case.
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        o for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o
+    ]
