@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import { fetchJournalEntries, deleteJournalEntry } from '../../store/slices/journalSlice';
 import JournalForm from './JournalForm';
 import '../../styles/responsive.css';
 
@@ -16,7 +17,8 @@ interface JournalEntry {
 }
 
 const Journal: React.FC = () => {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const entries = useSelector((state: RootState) => state.journal.entries) as JournalEntry[];
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState({
@@ -24,49 +26,25 @@ const Journal: React.FC = () => {
     tag: '',
     search: ''
   });
-  const { isAuthenticated } = useAuth();
 
+  // PrivateRoute already gates this route on Redux auth — dispatch unconditionally.
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchEntries();
-    }
-  }, [isAuthenticated]);
-
-  const fetchEntries = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/journal-entries/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      setEntries(response.data);
-    } catch (error) {
-      console.error('Error fetching journal entries:', error);
-    }
-  };
+    dispatch(fetchJournalEntries());
+  }, [dispatch]);
 
   const handleEdit = (entry: JournalEntry) => {
     setSelectedEntry(entry);
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (entryId: number) => {
+  const handleDelete = (entryId: number) => {
     if (window.confirm('Are you sure you want to delete this journal entry?')) {
-      try {
-        await axios.delete(`http://localhost:8000/api/journal-entries/${entryId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        setEntries(entries.filter(entry => entry.id !== entryId));
-      } catch (error) {
-        console.error('Error deleting journal entry:', error);
-      }
+      dispatch(deleteJournalEntry(entryId));
     }
   };
 
   const handleSave = () => {
-    fetchEntries();
+    dispatch(fetchJournalEntries());
     setIsFormOpen(false);
     setSelectedEntry(null);
   };
