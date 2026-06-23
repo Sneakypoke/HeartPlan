@@ -150,6 +150,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # Serialize DecimalField (e.g. TripPlanning.budget) as a JSON number rather
+    # than a string so it matches the frontend `budget: number` contract and
+    # Number.toLocaleString() formats it correctly.
+    'COERCE_DECIMAL_TO_STRING': False,
 }
 
 SIMPLE_JWT = {
