@@ -26,7 +26,11 @@ load_dotenv(BASE_DIR / '.env')  # must precede all os.getenv() calls
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# Default to the safe value so a forgotten env var in production fails closed
+# (DEBUG=False then trips the SECRET_KEY / ALLOWED_HOSTS guards below rather than
+# silently booting with the dev signing key and open CORS). Opt in for local dev
+# by setting DEBUG=True in the environment / .env.
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Fail loudly when the key is missing outside dev rather than booting with a
