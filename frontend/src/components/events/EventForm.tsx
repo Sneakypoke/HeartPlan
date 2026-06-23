@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, Event } from '../../store';
+import { addEvent, updateEvent } from '../../store/slices/eventSlice';
 
 interface EventFormProps {
-  event?: {
-    id?: number;
-    title: string;
-    description: string;
-    start: string;
-    end: string;
-  };
+  event?: Event;
   onSave: () => void;
   onCancel: () => void;
 }
 
 const EventForm: React.FC<EventFormProps> = ({ event, onSave, onCancel }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
   const [start, setStart] = useState(event?.start || '');
@@ -23,39 +19,24 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSave, onCancel }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const eventData = {
-        title,
-        description,
-        start,
-        end,
-      };
+    const eventData = {
+      title,
+      description,
+      start,
+      end,
+      location: event?.location ?? '',
+      category: event?.category ?? '',
+      reminder: event?.reminder ?? false,
+    };
 
+    try {
       if (event?.id) {
-        // Update existing event
-        await axios.put(
-          `http://localhost:8000/api/events/${event.id}/`,
-          eventData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        await dispatch(updateEvent({ id: event.id, event: eventData })).unwrap();
       } else {
-        // Create new event
-        await axios.post(
-          'http://localhost:8000/api/events/',
-          eventData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        await dispatch(addEvent(eventData)).unwrap();
       }
       onSave();
-    } catch (error) {
+    } catch {
       setError('Failed to save event. Please try again.');
     }
   };
@@ -144,4 +125,4 @@ const EventForm: React.FC<EventFormProps> = ({ event, onSave, onCancel }) => {
   );
 };
 
-export default EventForm; 
+export default EventForm;

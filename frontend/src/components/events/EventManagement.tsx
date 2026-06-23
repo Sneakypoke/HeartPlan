@@ -1,63 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch, Event } from '../../store';
+import { fetchEvents, deleteEvent } from '../../store/slices/eventSlice';
 import EventForm from './EventForm';
 
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  start: string;
-  end: string;
-}
-
 const EventManagement: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { events } = useSelector((state: RootState) => state.events);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
 
+  // PrivateRoute already gates this route on Redux auth — dispatch unconditionally.
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchEvents();
-    }
-  }, [isAuthenticated]);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/events/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      setEvents(response.data);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    }
-  };
+    dispatch(fetchEvents());
+  }, [dispatch]);
 
   const handleEdit = (event: Event) => {
     setSelectedEvent(event);
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (eventId: number) => {
+  const handleDelete = (eventId: number) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await axios.delete(`http://localhost:8000/api/events/${eventId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        setEvents(events.filter(event => event.id !== eventId));
-      } catch (error) {
-        console.error('Error deleting event:', error);
-      }
+      dispatch(deleteEvent(eventId));
     }
   };
 
   const handleSave = () => {
-    fetchEvents();
+    dispatch(fetchEvents());
     setIsFormOpen(false);
     setSelectedEvent(null);
   };
@@ -138,7 +108,7 @@ const EventManagement: React.FC = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(event.id)}
+                    onClick={() => handleDelete(event.id!)}
                     className="text-red-600 hover:text-red-900"
                   >
                     Delete
@@ -153,4 +123,4 @@ const EventManagement: React.FC = () => {
   );
 };
 
-export default EventManagement; 
+export default EventManagement;
