@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import client from '../../api/client';
 
 interface AuthState {
   token: string | null;
@@ -18,24 +18,24 @@ const initialState: AuthState = {
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials: { username: string; password: string }) => {
-    const response = await axios.post('http://localhost:8000/api/token/', credentials);
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    return access_token;
+    const response = await client.post('/api/token/', credentials);
+    const { access } = response.data;
+    localStorage.setItem('access_token', access);
+    return access;
   }
 );
 
 export const register = createAsyncThunk(
   'auth/register',
   async (userData: { username: string; email: string; password: string }) => {
-    await axios.post('http://localhost:8000/api/register/', userData);
-    const response = await axios.post('http://localhost:8000/api/token/', {
+    await client.post('/api/register/', userData);
+    const response = await client.post('/api/token/', {
       username: userData.username,
       password: userData.password,
     });
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    return access_token;
+    const { access } = response.data;
+    localStorage.setItem('access_token', access);
+    return access;
   }
 );
 
