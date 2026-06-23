@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, Trip } from '../../store';
+import { addTrip, updateTrip } from '../../store/slices/tripSlice';
 import '../../styles/responsive.css';
 
 interface TripFormProps {
@@ -39,7 +40,7 @@ interface TripFormProps {
 }
 
 const TripForm: React.FC<TripFormProps> = ({ trip, onSave, onCancel }) => {
-  const { token } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState(trip?.title || '');
   const [destination, setDestination] = useState(trip?.destination || '');
   const [startDate, setStartDate] = useState(trip?.start_date || '');
@@ -52,31 +53,23 @@ const TripForm: React.FC<TripFormProps> = ({ trip, onSave, onCancel }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const tripData = {
-        title,
-        destination,
-        start_date: startDate,
-        end_date: endDate,
-        budget,
-        status,
-        itinerary,
-        expenses,
-        packing_list: packingList,
-      };
+    const tripData = {
+      title,
+      destination,
+      start_date: startDate,
+      end_date: endDate,
+      budget,
+      status,
+      itinerary,
+      expenses,
+      packing_list: packingList,
+    } as Omit<Trip, 'id'>;
 
+    try {
       if (trip?.id) {
-        await axios.put(
-          `http://localhost:8000/api/trips/${trip.id}/`,
-          tripData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        await dispatch(updateTrip({ id: trip.id, trip: tripData })).unwrap();
       } else {
-        await axios.post('http://localhost:8000/api/trips/', tripData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await dispatch(addTrip(tripData)).unwrap();
       }
       onSave();
     } catch (error) {
