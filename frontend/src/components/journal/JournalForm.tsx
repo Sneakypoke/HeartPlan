@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store';
+import { addJournalEntry, updateJournalEntry } from '../../store/slices/journalSlice';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 interface JournalFormProps {
   entry?: {
@@ -18,6 +19,7 @@ interface JournalFormProps {
 }
 
 const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState(entry?.title || '');
   const [content, setContent] = useState(entry?.content || '');
   const [mood, setMood] = useState(entry?.mood || '');
@@ -28,37 +30,19 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel }) =>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const entryData = {
-        title,
-        content,
-        mood,
-        tags,
-        images,
-      };
+    const entryData = {
+      title,
+      content,
+      mood,
+      tags,
+      images,
+    };
 
+    try {
       if (entry?.id) {
-        // Update existing entry
-        await axios.put(
-          `http://localhost:8000/api/journal-entries/${entry.id}/`,
-          entryData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        await dispatch(updateJournalEntry({ id: entry.id, entry: entryData })).unwrap();
       } else {
-        // Create new entry
-        await axios.post(
-          'http://localhost:8000/api/journal-entries/',
-          entryData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-          }
-        );
+        await dispatch(addJournalEntry(entryData)).unwrap();
       }
       onSave();
     } catch (error) {
@@ -75,32 +59,6 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel }) =>
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('images', files[i]);
-      }
-
-      try {
-        const response = await axios.post(
-          'http://localhost:8000/api/upload-images/',
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        setImages([...images, ...response.data.urls]);
-      } catch (error) {
-        console.error('Error uploading images:', error);
-      }
-    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -233,18 +191,6 @@ const JournalForm: React.FC<JournalFormProps> = ({ entry, onSave, onCancel }) =>
               </div>
             ))}
           </div>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-medium
-              file:bg-indigo-50 file:text-indigo-700
-              hover:file:bg-indigo-100"
-          />
         </div>
         <div className="flex justify-end space-x-3">
           <button
