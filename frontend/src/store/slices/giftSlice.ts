@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import client from '../../api/client';
 
 interface Gift {
   id?: number;
@@ -26,39 +26,26 @@ const initialState: GiftState = {
   error: null,
 };
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('access_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const fetchGifts = createAsyncThunk('gifts/fetchGifts', async () => {
-  const response = await axios.get('http://localhost:8000/api/gifts/', {
-    headers: getAuthHeader(),
-  });
+  const response = await client.get('/api/gift-ideas/');
   return response.data;
 });
 
 export const addGift = createAsyncThunk('gifts/addGift', async (gift: Omit<Gift, 'id'>) => {
-  const response = await axios.post('http://localhost:8000/api/gifts/', gift, {
-    headers: getAuthHeader(),
-  });
+  const response = await client.post('/api/gift-ideas/', gift);
   return response.data;
 });
 
 export const updateGift = createAsyncThunk(
   'gifts/updateGift',
   async ({ id, gift }: { id: number; gift: Partial<Gift> }) => {
-    const response = await axios.patch(`http://localhost:8000/api/gifts/${id}/`, gift, {
-      headers: getAuthHeader(),
-    });
+    const response = await client.patch(`/api/gift-ideas/${id}/`, gift);
     return response.data;
   }
 );
 
 export const deleteGift = createAsyncThunk('gifts/deleteGift', async (id: number) => {
-  await axios.delete(`http://localhost:8000/api/gifts/${id}/`, {
-    headers: getAuthHeader(),
-  });
+  await client.delete(`/api/gift-ideas/${id}/`);
   return id;
 });
 
@@ -131,4 +118,4 @@ const giftSlice = createSlice({
 });
 
 export const { clearError } = giftSlice.actions;
-export default giftSlice.reducer; 
+export default giftSlice.reducer;
