@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import DOMPurify from 'dompurify';
 import { RootState, AppDispatch } from '../../store';
 import { fetchJournalEntries, deleteJournalEntry } from '../../store/slices/journalSlice';
 import JournalForm from './JournalForm';
@@ -174,9 +175,12 @@ const Journal: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <div className="prose max-w-none mb-4">
-                {entry.content}
-              </div>
+              {/* entry.content is react-quill HTML; sanitize before rendering
+                  to format the rich text without opening a stored-XSS hole. */}
+              <div
+                className="prose max-w-none mb-4"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }}
+              />
               {entry.images && entry.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                   {entry.images.map((image, index) => (
