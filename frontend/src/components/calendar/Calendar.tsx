@@ -4,6 +4,14 @@ import { RootState, AppDispatch, Event } from '../../store';
 import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../store/slices/eventSlice';
 import '../../styles/responsive.css';
 
+// DRF DateTimeField returns full ISO-8601 with seconds + zone (e.g.
+// "2026-06-23T12:44:00Z"), but <input type="datetime-local"> only accepts
+// "YYYY-MM-DDTHH:mm" and renders empty otherwise. Normalize on read so the
+// control populates. (Backend TIME_ZONE is UTC, so the bare value sent back on
+// write round-trips consistently as UTC.)
+const toLocalInput = (iso?: string): string =>
+  iso ? new Date(iso).toISOString().slice(0, 16) : '';
+
 const Calendar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { events } = useSelector((state: RootState) => state.events);
@@ -58,8 +66,8 @@ const Calendar: React.FC = () => {
     setSelectedEvent(event);
     setTitle(event.title);
     setDescription(event.description);
-    setStart(event.start);
-    setEnd(event.end);
+    setStart(toLocalInput(event.start));
+    setEnd(toLocalInput(event.end));
     setLocation(event.location);
     setCategory(event.category);
     setIsEditing(true);

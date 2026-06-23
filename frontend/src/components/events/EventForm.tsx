@@ -9,12 +9,18 @@ interface EventFormProps {
   onCancel: () => void;
 }
 
+// DRF DateTimeField values carry seconds + a timezone marker, which a
+// <input type="datetime-local"> rejects (renders empty). Strip to
+// "YYYY-MM-DDTHH:mm" on read so editing an event populates Start/End.
+const toLocalInput = (iso?: string): string =>
+  iso ? new Date(iso).toISOString().slice(0, 16) : '';
+
 const EventForm: React.FC<EventFormProps> = ({ event, onSave, onCancel }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
-  const [start, setStart] = useState(event?.start || '');
-  const [end, setEnd] = useState(event?.end || '');
+  const [start, setStart] = useState(toLocalInput(event?.start));
+  const [end, setEnd] = useState(toLocalInput(event?.end));
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
