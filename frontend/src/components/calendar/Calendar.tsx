@@ -1,81 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch, Event } from '../../store';
+import { fetchEvents, addEvent, updateEvent, deleteEvent } from '../../store/slices/eventSlice';
 import '../../styles/responsive.css';
 
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  location: string;
-  category: string;
-}
-
 const Calendar: React.FC = () => {
-  const { token } = useAuth();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const dispatch = useDispatch<AppDispatch>();
+  const { events } = useSelector((state: RootState) => state.events);
+  const [selectedDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
   const [location, setLocation] = useState('');
   const [category, setCategory] = useState('');
 
+  // PrivateRoute already gates this route on Redux auth — dispatch unconditionally.
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/events/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setEvents(response.data);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    }
-  };
+    dispatch(fetchEvents());
+  }, [dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const eventData = {
-        title,
-        description,
-        start_time: startTime,
-        end_time: endTime,
-        location,
-        category,
-      };
+    const eventData = {
+      title,
+      description,
+      start,
+      end,
+      location,
+      category,
+      reminder: selectedEvent?.reminder ?? false,
+    };
 
-      if (selectedEvent) {
-        await axios.put(
-          `http://localhost:8000/api/events/${selectedEvent.id}/`,
-          eventData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+    try {
+      if (selectedEvent?.id) {
+        await dispatch(updateEvent({ id: selectedEvent.id, event: eventData })).unwrap();
       } else {
-        await axios.post('http://localhost:8000/api/events/', eventData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await dispatch(addEvent(eventData)).unwrap();
       }
 
       setTitle('');
       setDescription('');
-      setStartTime('');
-      setEndTime('');
+      setStart('');
+      setEnd('');
       setLocation('');
       setCategory('');
       setSelectedEvent(null);
       setIsEditing(false);
-      fetchEvents();
     } catch (error) {
       console.error('Error saving event:', error);
     }
@@ -85,22 +58,15 @@ const Calendar: React.FC = () => {
     setSelectedEvent(event);
     setTitle(event.title);
     setDescription(event.description);
-    setStartTime(event.start_time);
-    setEndTime(event.end_time);
+    setStart(event.start);
+    setEnd(event.end);
     setLocation(event.location);
     setCategory(event.category);
     setIsEditing(true);
   };
 
-  const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`http://localhost:8000/api/events/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchEvents();
-    } catch (error) {
-      console.error('Error deleting event:', error);
-    }
+  const handleDelete = (id: number) => {
+    dispatch(deleteEvent(id));
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -125,7 +91,7 @@ const Calendar: React.FC = () => {
 
   const getEventsForDate = (date: Date) => {
     return events.filter((event) => {
-      const eventDate = new Date(event.start_time);
+      const eventDate = new Date(event.start);
       return (
         eventDate.getDate() === date.getDate() &&
         eventDate.getMonth() === date.getMonth() &&
@@ -145,8 +111,8 @@ const Calendar: React.FC = () => {
             setSelectedEvent(null);
             setTitle('');
             setDescription('');
-            setStartTime('');
-            setEndTime('');
+            setStart('');
+            setEnd('');
             setLocation('');
             setCategory('');
             setIsEditing(true);
@@ -188,27 +154,27 @@ const Calendar: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="start" className="block text-sm font-medium text-gray-700">
                 Start Time
               </label>
               <input
                 type="datetime-local"
-                id="startTime"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                id="start"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
             </div>
             <div>
-              <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="end" className="block text-sm font-medium text-gray-700">
                 End Time
               </label>
               <input
                 type="datetime-local"
-                id="endTime"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                id="end"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 required
               />
@@ -293,10 +259,21 @@ const Calendar: React.FC = () => {
                       {getEventsForDate(day).map((event) => (
                         <div
                           key={event.id}
-                          className="text-xs p-1 rounded bg-indigo-100 text-indigo-800 truncate"
-                          onClick={() => handleEdit(event)}
+                          className="text-xs p-1 rounded bg-indigo-100 text-indigo-800 truncate flex justify-between items-center"
                         >
-                          {event.title}
+                          <span
+                            className="truncate cursor-pointer"
+                            onClick={() => handleEdit(event)}
+                          >
+                            {event.title}
+                          </span>
+                          <button
+                            onClick={() => handleDelete(event.id!)}
+                            className="ml-1 text-red-600 hover:text-red-900"
+                            aria-label="Delete event"
+                          >
+                            ×
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -311,4 +288,4 @@ const Calendar: React.FC = () => {
   );
 };
 
-export default Calendar; 
+export default Calendar;
