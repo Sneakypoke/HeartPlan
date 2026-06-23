@@ -1,25 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch, Gift } from '../../store';
+import { fetchGifts, deleteGift, updateGift } from '../../store/slices/giftSlice';
 import GiftForm from './GiftForm';
 import '../../styles/responsive.css';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-
-interface Gift {
-  id: number;
-  title: string;
-  description: string;
-  price_range: string;
-  category: string;
-  occasion: string;
-  link?: string;
-  image_url?: string;
-  purchased: boolean;
-}
 
 const GiftVault: React.FC = () => {
-  const [gifts, setGifts] = useState<Gift[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { gifts, loading } = useSelector((state: RootState) => state.gifts);
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState({
@@ -28,67 +16,29 @@ const GiftVault: React.FC = () => {
     priceRange: '',
     purchased: 'all'
   });
-  const { isAuthenticated } = useAuth();
-  const { loading } = useSelector((state: RootState) => (state.gifts as any));
 
+  // PrivateRoute already gates this route on Redux auth — dispatch unconditionally.
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchGifts();
-    }
-  }, [isAuthenticated]);
-
-  const fetchGifts = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/gift-ideas/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      setGifts(response.data);
-    } catch (error) {
-      console.error('Error fetching gifts:', error);
-    }
-  };
+    dispatch(fetchGifts());
+  }, [dispatch]);
 
   const handleEdit = (gift: Gift) => {
     setSelectedGift(gift);
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (giftId: number) => {
+  const handleDelete = (giftId: number) => {
     if (window.confirm('Are you sure you want to delete this gift idea?')) {
-      try {
-        await axios.delete(`http://localhost:8000/api/gift-ideas/${giftId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        setGifts(gifts.filter(gift => gift.id !== giftId));
-      } catch (error) {
-        console.error('Error deleting gift:', error);
-      }
+      dispatch(deleteGift(giftId));
     }
   };
 
-  const handleTogglePurchased = async (gift: Gift) => {
-    try {
-      const response = await axios.patch(
-        `http://localhost:8000/api/gift-ideas/${gift.id}/`,
-        { purchased: !gift.purchased },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      setGifts(gifts.map(g => g.id === gift.id ? response.data : g));
-    } catch (error) {
-      console.error('Error updating gift:', error);
-    }
+  const handleTogglePurchased = (gift: Gift) => {
+    dispatch(updateGift({ id: gift.id!, gift: { purchased: !gift.purchased } }));
   };
 
   const handleSave = () => {
-    fetchGifts();
+    dispatch(fetchGifts());
     setIsFormOpen(false);
     setSelectedGift(null);
   };
@@ -258,7 +208,7 @@ const GiftVault: React.FC = () => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(gift.id)}
+                  onClick={() => handleDelete(gift.id!)}
                   className="text-red-600 hover:text-red-800"
                 >
                   Delete
