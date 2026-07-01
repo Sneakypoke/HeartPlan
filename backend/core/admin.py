@@ -4,9 +4,9 @@ from .models import Event, ToDoList, GiftIdea, JournalEntry, TripPlanning
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'date', 'user', 'created_at')
-    search_fields = ('title', 'description')
-    list_filter = ('date', 'created_at', 'user')
+    list_display = ('title', 'start', 'end', 'user', 'created_at')
+    search_fields = ('title', 'description', 'location')
+    list_filter = ('start', 'category', 'created_at', 'user')
 
 @admin.register(ToDoList)
 class ToDoListAdmin(admin.ModelAdmin):
@@ -28,6 +28,6 @@ class JournalEntryAdmin(admin.ModelAdmin):
 
 @admin.register(TripPlanning)
 class TripPlanningAdmin(admin.ModelAdmin):
-    list_display = ('title', 'start_date', 'end_date', 'user', 'created_at')
-    search_fields = ('title', 'description')
-    list_filter = ('start_date', 'end_date', 'created_at', 'user')
+    list_display = ('title', 'destination', 'start_date', 'end_date', 'user', 'created_at')
+    search_fields = ('title', 'destination')
+    list_filter = ('start_date', 'end_date', 'status', 'created_at', 'user')

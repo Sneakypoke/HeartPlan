@@ -1,67 +1,54 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import client from '../../api/client';
 
-interface Event {
+export interface Event {
   id?: number;
   title: string;
   description: string;
-  start_date: string;
-  end_date: string;
+  start: string;
+  end: string;
   location: string;
-  type: 'birthday' | 'anniversary' | 'holiday' | 'other';
+  category: string;
   reminder: boolean;
 }
 
-interface CalendarState {
+interface EventState {
   events: Event[];
   loading: boolean;
   error: string | null;
 }
 
-const initialState: CalendarState = {
+const initialState: EventState = {
   events: [],
   loading: false,
   error: null,
 };
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('access_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-export const fetchEvents = createAsyncThunk('calendar/fetchEvents', async () => {
-  const response = await axios.get('http://localhost:8000/api/calendar/', {
-    headers: getAuthHeader(),
-  });
+export const fetchEvents = createAsyncThunk('events/fetchEvents', async () => {
+  const response = await client.get('/api/events/');
   return response.data;
 });
 
-export const addEvent = createAsyncThunk('calendar/addEvent', async (event: Omit<Event, 'id'>) => {
-  const response = await axios.post('http://localhost:8000/api/calendar/', event, {
-    headers: getAuthHeader(),
-  });
+export const addEvent = createAsyncThunk('events/addEvent', async (event: Omit<Event, 'id'>) => {
+  const response = await client.post('/api/events/', event);
   return response.data;
 });
 
 export const updateEvent = createAsyncThunk(
-  'calendar/updateEvent',
+  'events/updateEvent',
   async ({ id, event }: { id: number; event: Partial<Event> }) => {
-    const response = await axios.patch(`http://localhost:8000/api/calendar/${id}/`, event, {
-      headers: getAuthHeader(),
-    });
+    const response = await client.patch(`/api/events/${id}/`, event);
     return response.data;
   }
 );
 
-export const deleteEvent = createAsyncThunk('calendar/deleteEvent', async (id: number) => {
-  await axios.delete(`http://localhost:8000/api/calendar/${id}/`, {
-    headers: getAuthHeader(),
-  });
+export const deleteEvent = createAsyncThunk('events/deleteEvent', async (id: number) => {
+  await client.delete(`/api/events/${id}/`);
   return id;
 });
 
-const calendarSlice = createSlice({
-  name: 'calendar',
+const eventSlice = createSlice({
+  name: 'events',
   initialState,
   reducers: {
     clearError: (state) => {
@@ -128,5 +115,5 @@ const calendarSlice = createSlice({
   },
 });
 
-export const { clearError } = calendarSlice.actions;
-export default calendarSlice.reducer; 
+export const { clearError } = eventSlice.actions;
+export default eventSlice.reducer;

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import client from '../../api/client';
 
 interface AuthState {
   token: string | null;
@@ -8,6 +9,21 @@ interface AuthState {
   error: string | null;
 }
 
+// DRF returns validation detail as either { detail: "..." } (auth failures) or
+// { field: ["msg", ...] } (serializer errors). Flatten to a single readable
+// string so the user sees the actual reason (duplicate username, weak password,
+// invalid email) instead of a generic "failed" message.
+const extractError = (payload: unknown, fallback: string): string => {
+  if (payload && typeof payload === 'object') {
+    const data = payload as Record<string, unknown>;
+    if (typeof data.detail === 'string') return data.detail;
+    const first = Object.values(data)[0];
+    if (Array.isArray(first) && typeof first[0] === 'string') return first[0];
+    if (typeof first === 'string') return first;
+  }
+  return fallback;
+};
+
 const initialState: AuthState = {
   token: localStorage.getItem('access_token'),
   isAuthenticated: !!localStorage.getItem('access_token'),
@@ -15,29 +31,41 @@ const initialState: AuthState = {
   error: null,
 };
 
-export const login = createAsyncThunk(
-  'auth/login',
-  async (credentials: { username: string; password: string }) => {
-    const response = await axios.post('http://localhost:8000/api/token/', credentials);
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    return access_token;
+export const login = createAsyncThunk<
+  string,
+  { username: string; password: string },
+  { rejectValue: unknown }
+>('auth/login', async (credentials, { rejectWithValue }) => {
+  try {
+    const response = await client.post('/api/token/', credentials);
+    const { access } = response.data;
+    localStorage.setItem('access_token', access);
+    return access;
+  } catch (err) {
+    if (axios.isAxiosError(err)) return rejectWithValue(err.response?.data);
+    throw err;
   }
-);
+});
 
-export const register = createAsyncThunk(
-  'auth/register',
-  async (userData: { username: string; email: string; password: string }) => {
-    await axios.post('http://localhost:8000/api/register/', userData);
-    const response = await axios.post('http://localhost:8000/api/token/', {
+export const register = createAsyncThunk<
+  string,
+  { username: string; email: string; password: string },
+  { rejectValue: unknown }
+>('auth/register', async (userData, { rejectWithValue }) => {
+  try {
+    await client.post('/api/register/', userData);
+    const response = await client.post('/api/token/', {
       username: userData.username,
       password: userData.password,
     });
-    const { access_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    return access_token;
+    const { access } = response.data;
+    localStorage.setItem('access_token', access);
+    return access;
+  } catch (err) {
+    if (axios.isAxiosError(err)) return rejectWithValue(err.response?.data);
+    throw err;
   }
-);
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -65,7 +93,9 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = action.payload
+          ? extractError(action.payload, 'Login failed')
+          : action.error.message || 'Login failed';
       })
       .addCase(register.pending, (state) => {
         state.loading = true;
@@ -78,7 +108,9 @@ const authSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Registration failed';
+        state.error = action.payload
+          ? extractError(action.payload, 'Registration failed')
+          : action.error.message || 'Registration failed';
       });
   },
 });

@@ -3,7 +3,8 @@ import authReducer from './slices/authSlice';
 import todoReducer, { TodoState } from './slices/todoSlice';
 import giftReducer from './slices/giftSlice';
 import journalReducer from './slices/journalSlice';
-import calendarReducer from './slices/calendarSlice';
+import eventReducer from './slices/eventSlice';
+import tripReducer from './slices/tripSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     todos: todoReducer,
     gifts: giftReducer,
     journal: journalReducer,
-    calendar: calendarReducer,
+    events: eventReducer,
+    trips: tripReducer,
   },
 });
 
@@ -45,17 +47,33 @@ export interface JournalEntry {
   title: string;
   content: string;
   mood: string;
-  date: string;
   tags: string[];
+  images: string[];
 }
 
 export interface Event {
   id?: number;
   title: string;
   description: string;
+  start: string;
+  end: string;
+  location: string;
+  category: string;
+  reminder: boolean;
+}
+
+export interface Trip {
+  id?: number;
+  title: string;
+  destination: string;
   start_date: string;
   end_date: string;
-  location: string;
-  type: 'birthday' | 'anniversary' | 'holiday' | 'other';
-  reminder: boolean;
-} 
+  budget: number;
+  status: string;
+  itinerary: unknown[];
+  expenses: unknown[];
+  packing_list: unknown[];
+}
+
+// Re-export TodoState for external consumers
+export type { TodoState };

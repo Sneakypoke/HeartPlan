@@ -1,26 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, Gift } from '../../store';
+import { addGift, updateGift } from '../../store/slices/giftSlice';
 import '../../styles/responsive.css';
 
 interface GiftFormProps {
-  gift?: {
-    id: number;
-    title: string;
-    description: string;
-    price_range: string;
-    category: string;
-    occasion: string;
-    link?: string;
-    image_url?: string;
-    purchased: boolean;
-  };
+  gift?: Gift;
   onSave: () => void;
   onCancel: () => void;
 }
 
 const GiftForm: React.FC<GiftFormProps> = ({ gift, onSave, onCancel }) => {
-  const { token } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const [title, setTitle] = useState(gift?.title || '');
   const [description, setDescription] = useState(gift?.description || '');
   const [priceRange, setPriceRange] = useState(gift?.price_range || '');
@@ -31,30 +22,23 @@ const GiftForm: React.FC<GiftFormProps> = ({ gift, onSave, onCancel }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const giftData = {
-        title,
-        description,
-        price_range: priceRange,
-        category,
-        occasion,
-        link,
-        image_url: imageUrl,
-        purchased: gift?.purchased || false,
-      };
+    const giftData = {
+      title,
+      description,
+      price_range: priceRange,
+      category,
+      occasion,
+      link,
+      image_url: imageUrl,
+      purchased: gift?.purchased || false,
+      notes: gift?.notes ?? '',
+    };
 
+    try {
       if (gift?.id) {
-        await axios.put(
-          `http://localhost:8000/api/gift-ideas/${gift.id}/`,
-          giftData,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        await dispatch(updateGift({ id: gift.id, gift: giftData })).unwrap();
       } else {
-        await axios.post('http://localhost:8000/api/gift-ideas/', giftData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await dispatch(addGift(giftData)).unwrap();
       }
       onSave();
     } catch (error) {

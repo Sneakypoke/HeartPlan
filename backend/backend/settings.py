@@ -26,7 +26,11 @@ load_dotenv(BASE_DIR / '.env')  # must precede all os.getenv() calls
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# Default to the safe value so a forgotten env var in production fails closed
+# (DEBUG=False then trips the SECRET_KEY / ALLOWED_HOSTS guards below rather than
+# silently booting with the dev signing key and open CORS). Opt in for local dev
+# by setting DEBUG=True in the environment / .env.
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Fail loudly when the key is missing outside dev rather than booting with a
@@ -150,10 +154,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # Serialize DecimalField (e.g. TripPlanning.budget) as a JSON number rather
+    # than a string so it matches the frontend `budget: number` contract and
+    # Number.toLocaleString() formats it correctly.
+    'COERCE_DECIMAL_TO_STRING': False,
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,

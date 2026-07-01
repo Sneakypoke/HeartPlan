@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../../store';
+import { fetchTrips, deleteTrip } from '../../store/slices/tripSlice';
 import TripForm from './TripForm';
 import '../../styles/responsive.css';
 
@@ -44,56 +45,33 @@ interface Trip {
 }
 
 const Trip: React.FC = () => {
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const trips = useSelector((state: RootState) => state.trips.trips) as Trip[];
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState({
     status: '',
     search: ''
   });
-  const { isAuthenticated } = useAuth();
 
+  // PrivateRoute already gates this route on Redux auth — dispatch unconditionally.
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchTrips();
-    }
-  }, [isAuthenticated]);
-
-  const fetchTrips = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/trips/', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
-      setTrips(response.data);
-    } catch (error) {
-      console.error('Error fetching trips:', error);
-    }
-  };
+    dispatch(fetchTrips());
+  }, [dispatch]);
 
   const handleEdit = (trip: Trip) => {
     setSelectedTrip(trip);
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (tripId: number) => {
+  const handleDelete = (tripId: number) => {
     if (window.confirm('Are you sure you want to delete this trip?')) {
-      try {
-        await axios.delete(`http://localhost:8000/api/trips/${tripId}/`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        });
-        setTrips(trips.filter(trip => trip.id !== tripId));
-      } catch (error) {
-        console.error('Error deleting trip:', error);
-      }
+      dispatch(deleteTrip(tripId));
     }
   };
 
   const handleSave = () => {
-    fetchTrips();
+    dispatch(fetchTrips());
     setIsFormOpen(false);
     setSelectedTrip(null);
   };

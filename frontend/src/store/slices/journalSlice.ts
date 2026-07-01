@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import client from '../../api/client';
 
 interface JournalEntry {
   id?: number;
   title: string;
   content: string;
   mood: string;
-  date: string;
   tags: string[];
+  images: string[];
 }
 
 interface JournalState {
@@ -22,24 +22,15 @@ const initialState: JournalState = {
   error: null,
 };
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('access_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const fetchJournalEntries = createAsyncThunk('journal/fetchEntries', async () => {
-  const response = await axios.get('http://localhost:8000/api/journal/', {
-    headers: getAuthHeader(),
-  });
+  const response = await client.get('/api/journal-entries/');
   return response.data;
 });
 
 export const addJournalEntry = createAsyncThunk(
   'journal/addEntry',
   async (entry: Omit<JournalEntry, 'id'>) => {
-    const response = await axios.post('http://localhost:8000/api/journal/', entry, {
-      headers: getAuthHeader(),
-    });
+    const response = await client.post('/api/journal-entries/', entry);
     return response.data;
   }
 );
@@ -47,17 +38,13 @@ export const addJournalEntry = createAsyncThunk(
 export const updateJournalEntry = createAsyncThunk(
   'journal/updateEntry',
   async ({ id, entry }: { id: number; entry: Partial<JournalEntry> }) => {
-    const response = await axios.patch(`http://localhost:8000/api/journal/${id}/`, entry, {
-      headers: getAuthHeader(),
-    });
+    const response = await client.patch(`/api/journal-entries/${id}/`, entry);
     return response.data;
   }
 );
 
 export const deleteJournalEntry = createAsyncThunk('journal/deleteEntry', async (id: number) => {
-  await axios.delete(`http://localhost:8000/api/journal/${id}/`, {
-    headers: getAuthHeader(),
-  });
+  await client.delete(`/api/journal-entries/${id}/`);
   return id;
 });
 
@@ -130,4 +117,4 @@ const journalSlice = createSlice({
 });
 
 export const { clearError } = journalSlice.actions;
-export default journalSlice.reducer; 
+export default journalSlice.reducer;

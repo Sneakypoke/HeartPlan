@@ -9,6 +9,7 @@ import GiftVault from './components/gifts/GiftVault';
 import Journal from './components/journal/Journal';
 import Calendar from './components/calendar/Calendar';
 import Trip from './components/trips/Trip';
+import EventManagement from './components/events/EventManagement';
 import { useSelector } from 'react-redux';
 import { RootState } from './store';
 
@@ -62,6 +63,14 @@ const App: React.FC = () => {
               element={
                 <PrivateRoute>
                   <Trip />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <EventManagement />
                 </PrivateRoute>
               }
             />

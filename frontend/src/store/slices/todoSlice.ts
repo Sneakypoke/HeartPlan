@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import client from '../../api/client';
 import { Todo } from '../index';
 
 export interface TodoState {
@@ -14,39 +14,26 @@ const initialState: TodoState = {
   error: null,
 };
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem('access_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const fetchTodos = createAsyncThunk('todos/fetchTodos', async () => {
-  const response = await axios.get('http://localhost:8000/api/todos/', {
-    headers: getAuthHeader(),
-  });
+  const response = await client.get('/api/todo-lists/');
   return response.data;
 });
 
 export const addTodo = createAsyncThunk('todos/addTodo', async (todo: Omit<Todo, 'id'>) => {
-  const response = await axios.post('http://localhost:8000/api/todos/', todo, {
-    headers: getAuthHeader(),
-  });
+  const response = await client.post('/api/todo-lists/', todo);
   return response.data;
 });
 
 export const updateTodo = createAsyncThunk(
   'todos/updateTodo',
   async ({ id, todo }: { id: number; todo: Partial<Todo> }) => {
-    const response = await axios.patch(`http://localhost:8000/api/todos/${id}/`, todo, {
-      headers: getAuthHeader(),
-    });
+    const response = await client.patch(`/api/todo-lists/${id}/`, todo);
     return response.data;
   }
 );
 
 export const deleteTodo = createAsyncThunk('todos/deleteTodo', async (id: number) => {
-  await axios.delete(`http://localhost:8000/api/todos/${id}/`, {
-    headers: getAuthHeader(),
-  });
+  await client.delete(`/api/todo-lists/${id}/`);
   return id;
 });
 
@@ -119,4 +106,4 @@ const todoSlice = createSlice({
 });
 
 export const { clearError } = todoSlice.actions;
-export default todoSlice.reducer; 
+export default todoSlice.reducer;
