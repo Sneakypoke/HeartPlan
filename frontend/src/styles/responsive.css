@@ -143,23 +143,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Responsive Cards */
+/* Responsive Cards
+   NOTE: these cards live inside `.grid-responsive` (CSS grid), which already sizes each
+   child to one column (1fr) per breakpoint. Do NOT also set a percentage width here —
+   inside a grid cell a `%` resolves against the cell, not the container, double-
+   constraining the card to ~1/9 width and clipping its content (hidden action buttons,
+   mashed Budget/Spent text). Let the grid own the width; the card just fills its cell. */
 .card-responsive {
   width: 100%;
   margin-bottom: 1rem;
-}
-
-@media (min-width: 640px) {
-  .card-responsive {
-    width: calc(50% - 1rem);
-    margin-right: 1rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-responsive {
-    width: calc(33.333% - 1rem);
-  }
 }
 
 /* Responsive Modals */
